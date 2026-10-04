@@ -1,7 +1,10 @@
 # 目录
 
 * [简介](README.md)
+* [学习指南](LEARNING_GUIDE.md)
 * [课程体系设计](CURRICULUM.md)
+* [试卷导航](exams/README.md)
+* [离线防御实验](examples/README.md)
 
 ---
 
@@ -84,3 +87,4 @@
 
 * [贡献指南](CONTRIBUTING.md)
 * [开发日志](DEVELOPMENT_LOG.md)
+* [参考项目设计对照](REFERENCE_DESIGN.md)

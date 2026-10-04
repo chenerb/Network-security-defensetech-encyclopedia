@@ -3,7 +3,7 @@
 > 一本系统全面、通俗易懂的网络安全防御技术教程文档
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-[![Status: Active](https://img.shields.io/badge/Status-Active-green.svg)]()
+**版本：v1.0.0 · 完整首版**
 
 ---
 
@@ -19,6 +19,17 @@
 > **核心理念**：安全是"防御者思维"的修炼——不是在攻击发生后补救，而是在攻击发生前建立纵深防御。
 
 ---
+
+## 🧭 学习入口
+
+本项目参考机器学习指南 ML-encyclopedia 的分层知识地图、故事化讲解、费曼自测和四级试卷体系，形成“理解原理 → 验证控制 → 场景复盘”的防御学习闭环。
+
+- [学习指南](LEARNING_GUIDE.md)：按基础选路线、每章验收任务与带 Agent 网店综合练习。
+- [全文目录](SUMMARY.md)：十章 40 篇正文。
+- [试卷导航](exams/README.md)：全十章 70 套试卷，每套含独立题目与详细解析，共 140 个试卷文件。
+- [离线实验](examples/README.md)：HMAC、参数化查询、Agent 模型外权限控制，仅需 Python 标准库。
+- [术语定位](glossary/index.md)：缩写、定义与正文链接。
+- [参考项目设计对照](REFERENCE_DESIGN.md)：本次如何借鉴机器学习指南。
 
 ## 🗺️ 知识地图
 
@@ -109,7 +120,7 @@
 - [英汉术语对照表](glossary/english-chinese.md)
 - [术语索引](glossary/index.md)
 
-> 📐 想了解课程体系的设计依据（对标 C9 / 常春藤课程）？请看 [CURRICULUM.md](CURRICULUM.md)。
+> 📐 想了解课程体系的设计依据（公开课程与官方规范映射）？请看 [CURRICULUM.md](CURRICULUM.md)。
 
 ---
 
@@ -139,11 +150,25 @@
 
 - 每篇文章配有**寓言故事**和**费曼自测**，边读边思考
 - 每节配有**节末小测**，每章配有**章节综合卷**（见 [`exams/`](exams/README.md) 目录）
-- 所有试卷均提供**题目版**和**带答案+分析的解析版**，覆盖 C9 高校真题改编、大厂安全岗面试题、易混淆点
+- 所有试卷均提供**题目版**和**带答案+分析的解析版**，采用原创概念题与岗位场景，覆盖易混淆点、边界条件和防御方案验收；不声明来自未经核验的高校或企业真题
 
 > **建议**：学完一节 → 做对应节末小测 → 对照解析查漏补缺 → 再进入下一节。
 
 ---
+
+## 🔍 本地验证
+
+在仓库根目录运行，支持 Python 3.9+，无需安装第三方依赖：
+
+```bash
+python3 -m unittest discover -s tests -v
+python3 scripts/check_content.py
+python3 examples/integrity_hmac.py
+python3 examples/parameterized_query.py
+python3 examples/agent_policy.py
+```
+
+检查覆盖内部路径与锚点、教学模块、题目和解析的配对与编号、各章题量。CI 使用同一组命令；外部参考的可访问性与技术准确性需单独复核，结构检查不能替代内容评审。
 
 ## 🤝 贡献指南
 
@@ -167,6 +192,6 @@
 
 ---
 
-**最后更新**：2026年4月 ｜ **维护者**：网络安全防御技术百科全书项目组
+**最后更新**：2026年10月4日 ｜ **维护者**：网络安全防御技术百科全书项目组
 
 📔 查看[开发日志](DEVELOPMENT_LOG.md)了解项目演进历史与最新进展。

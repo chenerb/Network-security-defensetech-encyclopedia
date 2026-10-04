@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" role="img" aria-labelledby="title description">
+  <title id="title">防御建设与验证闭环</title>
+  <desc id="description">资产与目标、信任边界、最小权限与控制、监测与响应、恢复与验证五个环节，并持续反馈更新威胁模型。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#32645c"/></marker>
+  </defs>
+  <rect width="1200" height="600" fill="#f7f5ef"/>
+  <g font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif" fill="#193b35">
+    <text x="70" y="85" font-size="34" font-weight="700">把防御变成可验证的过程</text>
+    <text x="70" y="122" font-size="19">先说明保护什么，再验证每道控制是否有效。</text>
+    <g fill="#fff" stroke="#32645c" stroke-width="2">
+      <rect x="70" y="195" width="300" height="125" rx="14"/>
+      <rect x="450" y="195" width="300" height="125" rx="14"/>
+      <rect x="830" y="195" width="300" height="125" rx="14"/>
+      <rect x="830" y="395" width="300" height="125" rx="14"/>
+      <rect x="450" y="395" width="300" height="125" rx="14"/>
+    </g>
+    <g font-size="23" font-weight="650">
+      <text x="95" y="238">01 资产与目标</text>
+      <text x="475" y="238">02 信任边界</text>
+      <text x="855" y="238">03 控制与授权</text>
+      <text x="855" y="438">04 监测与响应</text>
+      <text x="475" y="438">05 恢复与验证</text>
+    </g>
+    <g font-size="18">
+      <text x="95" y="274">CIA · 业务后果 · 责任人</text>
+      <text x="475" y="274">身份 · 数据流 · 威胁假设</text>
+      <text x="855" y="274">最小权限 · 默认拒绝 · 隔离</text>
+      <text x="855" y="474">证据 · 告警 · 止损与保全</text>
+      <text x="475" y="474">恢复演练 · 回归与复盘</text>
+      <text x="83" y="432">反馈更新</text>
+      <text x="83" y="465">资产、假设与控制</text>
+    </g>
+  </g>
+  <g fill="none" stroke="#32645c" stroke-width="3" marker-end="url(#arrow)">
+    <path d="M375 258 H440"/>
+    <path d="M755 258 H820"/>
+    <path d="M980 326 V383"/>
+    <path d="M820 458 H762"/>
+    <path d="M440 495 H340 Q300 495 300 455 V333" stroke-dasharray="7 6"/>
+  </g>
+</svg>

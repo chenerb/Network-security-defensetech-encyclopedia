@@ -7,7 +7,7 @@
 ## 🌟 如何参与
 
 ### 1. 报告问题
-- 发现错误或不准确的内容？请[创建Issue](https://github.com/chenerb/Network-security-defense-tech-encyclopaedia/issues)
+- 发现错误或不准确的内容？请在本仓库实际托管平台创建 Issue
 - 报告问题时请尽量详细：
   - 错误位置（文件路径、章节标题）
   - 错误描述
@@ -15,9 +15,9 @@
 
 ### 2. 提交代码/文档
 1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/your-feature-name`)
+2. 创建特性分支 (`git checkout -b codex/your-feature-name`)
 3. 提交更改 (`git commit -m 'Add some feature'`)
-4. 推送到分支 (`git push origin feature/your-feature-name`)
+4. 推送到分支 (`git push origin codex/your-feature-name`)
 5. 开启 Pull Request
 
 ### 3. 内容评审
@@ -29,7 +29,7 @@
 ## 📝 贡献类型
 
 ### 新文章撰写
-- 撰写新的教程文章，遵循[文章模板](#文章模板)
+- 撰写新的教程文章，遵循[文章模板](#-文章模板)
 - 确保内容准确、易懂、结构化
 - 提供足够的示例和生活化解释
 - **必须符合防御导向与合规要求**
@@ -59,6 +59,15 @@
 - 提高文章的可读性和流畅性
 
 ---
+
+## 🔬 来源与练习要求
+
+- 引用原始官方资料，标注标题、版本、正式或草案状态、链接与核验日期；明确建议与规范的区别。
+- 题目默认原创；若确为改编，提供具体题目、年份和可核验原始链接，遵守原许可，不笼统声称来自高校或公司真题。
+- 题目与解析按连续 `### 1.` 编号；选择题解释全部选项，场景题提供步骤和评分依据；解析含考点分布表。
+- 每篇正文链接对应题目与解析，每份试卷链接正文、配对卷和试卷导航；来源变更同时检查相关题目。
+- 资源章的练习评估选型与证据判断；正文、实验、题量和版本日志必须按实际文件同步。
+- 离线实验使用合成数据，不能联网或修改系统设置；新增控制行为先写可观察结果的测试，维护结构检查与 CI。
 
 ## 🎯 文章模板
 
@@ -169,7 +178,8 @@
 ### 3. 本地测试
 ```bash
 cd Network-security-defense-tech-encyclopaedia
-# 使用你喜欢的 Markdown 预览工具
+python3 -m unittest discover -s tests -v
+python3 scripts/check_content.py
 ```
 
 ### 4. 提交PR
@@ -237,8 +247,8 @@ cd Network-security-defense-tech-encyclopaedia
 你的贡献将帮助更多人掌握网络安全防御技能，共建更安全的数字世界！
 
 **联系方式：**
-- GitHub Issues：[创建Issue](https://github.com/chenerb/Network-security-defense-tech-encyclopaedia/issues)
+- GitHub Issues：在本仓库实际托管平台创建 Issue
 
 ---
 
-*最后更新：2026年4月*
+*最后更新：2026年10月4日*
