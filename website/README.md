@@ -4,9 +4,13 @@
 
 ## 在线访问与发布
 
-公开网址：[网络安全防御技术学习指南](https://network-defense-learning-guide.cocoa-tang-7127.chatgpt.site)。其他电脑和手机可直接使用浏览器访问，无须安装 Node.js，也无须保持开发电脑开机。学习记录仍只保存在当前浏览器。
+GitHub Pages 网址：[网络安全防御技术学习指南](https://chenerb.github.io/Network-security-defensetech-encyclopedia/)。其他电脑和手机可直接使用浏览器访问，无须安装 Node.js，也无须保持开发电脑开机。学习记录仍只保存在当前浏览器。
 
-站点使用 Sites 静态托管；[部署配置](../.openai/hosting.json)记录固定的站点 ID 和 `dist/` 发布目录。更新教材或前端后需重新构建、保存并部署新版本；只推送 GitHub 源码不会自动更新公开站点。发布时使用独立的临时源码目录，`.sites/`、构建产物和发布凭据不提交到 GitHub。发布凭据仅通过发布工具的标准输入传入，不写入配置。
+部署方式参考 [ML-encyclopedia](https://chenerb.github.io/ML-encyclopedia/)：使用 GitHub Actions 构建静态文件，再交给 GitHub Pages 托管。[部署流程](../.github/workflows/pages.yml)在推送 `main` 时自动运行，也可在仓库 Actions 页面选择该流程并手动运行 `main` 分支；功能分支和 PR 不会更新正式网站。
+
+仓库 **Settings → Pages → Build and deployment → Source** 设为 **GitHub Actions**。工作流使用 Node.js 24，安装锁定依赖、检查课程与链接、运行单元测试、构建并仅上传 `dist/`；部署所需的权限由 GitHub 自动签发，无须提交个人令牌，也无须维护 `gh-pages` 分支。Actions 中的 `github-pages` 环境会显示本次发布网址，构建失败不会覆盖已发布版本。
+
+网站保留相对资源基址与 hash 路由，课程、试卷和搜索资源随站点从 `/Network-security-defensetech-encyclopedia/` 加载。更新教材或前端后提交并推送 `main`，等待部署流程成功后刷新页面即可。先前 Sites 站点已关闭公开访问，仓库不再使用其部署配置；不同站点来源之间的浏览器学习记录不会自动迁移。
 
 ## 本机运行
 
