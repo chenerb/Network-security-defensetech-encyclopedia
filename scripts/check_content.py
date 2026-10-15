@@ -4,6 +4,7 @@ import argparse
 from collections import Counter
 import html
 import json
+import os
 from pathlib import Path
 import re
 import sys
@@ -77,9 +78,16 @@ def check_repository(root):
     def report(path, line, message):
         errors.append({"path": str(path.relative_to(root)), "line": line, "message": message})
 
-    paths = sorted(p for p in root.rglob("*.md")
-                   if not any(part.startswith(".") or part in ("node_modules", "vendor")
-                              for part in p.relative_to(root).parts))
+    paths = []
+    generated = {("website", "public", "content"), ("website", "src", "generated")}
+    excluded = {"node_modules", "vendor", "dist", "test-results", "playwright-report"}
+    for directory, subdirs, filenames in os.walk(root):
+        parent = Path(directory)
+        subdirs[:] = [name for name in subdirs
+                      if not name.startswith(".") and name not in excluded
+                      and (parent / name).relative_to(root).parts not in generated]
+        paths.extend(parent / name for name in filenames if name.endswith(".md"))
+    paths.sort()
     for path in paths:
         source = path.read_text(encoding="utf-8")
         visible, unclosed = visible_markdown(source)

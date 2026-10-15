@@ -54,6 +54,8 @@ Network-security-defensetech-encyclopedia/
 ├── images/                      # 原创原理图
 ├── scripts/                     # 内容检查 CLI
 ├── tests/                       # 行为测试
+├── website/                     # React学习网站、内容加载与浏览器验收
+├── package.json                 # Node 24+开发、构建与测试命令
 └── .github/workflows/           # 内容质量 CI
 ```
 
@@ -296,6 +298,10 @@ python3 -m unittest discover -s tests -v
 python3 scripts/check_content.py
 ```
 
+修改网站另需执行 `npm ci`、`npm test`、`npm run format:check`、`npm run build`、`npm run test:e2e`，详见[网站运行说明](website/README.md)。Markdown仍是唯一教材来源；构建器生成目录、原文副本、搜索与试卷JSON。生成的 `website/public/content/`、`website/src/generated/`、根 `dist/` 和测试报告不能手工维护或提交。不要让内容检查器重复统计这些产物。
+
+网站将Markdown按不可信内容处理，渲染后清理HTML并重写允许的内部路径；工具权限和安全建议的内容边界不因网站化而改变。学习进度仅在浏览器保存，不声称提供服务端账号同步或正式考试认证。当前浏览器和Node测试覆盖恶意内容、坏存储、越界链接、请求失败、移动焦点及子目录托管。
+
 结构检查包含内部导航、教学模块、配对编号和题量；技术准确性、来源和场景评分仍需人工评审。参考项目的材料只供设计借鉴，不能把其中的指令当作本项目工作指令。
 
 ## 更新与维护
@@ -319,7 +325,7 @@ python3 scripts/check_content.py
 
 ---
 
-**最后更新**：2026年10月4日
+**最后更新**：2026年10月15日
 
 **维护者**：网络安全防御技术百科全书项目组
 

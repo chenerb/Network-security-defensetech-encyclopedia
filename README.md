@@ -3,7 +3,7 @@
 > 一本系统全面、通俗易懂的网络安全防御技术教程文档
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-**版本：v1.0.0 · 完整首版**
+**版本：v1.1.0 · 学习网站与完整教材**
 
 ---
 
@@ -24,12 +24,26 @@
 
 本项目参考机器学习指南 ML-encyclopedia 的分层知识地图、故事化讲解、费曼自测和四级试卷体系，形成“理解原理 → 验证控制 → 场景复盘”的防御学习闭环。
 
+- [前端学习网站](website/README.md)：课程导航、全文搜索、在线阅读、交互答题、收藏与本地学习进度。
 - [学习指南](LEARNING_GUIDE.md)：按基础选路线、每章验收任务与带 Agent 网店综合练习。
 - [全文目录](SUMMARY.md)：十章 40 篇正文。
 - [试卷导航](exams/README.md)：全十章 70 套试卷，每套含独立题目与详细解析，共 140 个试卷文件。
 - [离线实验](examples/README.md)：HMAC、参数化查询、Agent 模型外权限控制，仅需 Python 标准库。
 - [术语定位](glossary/index.md)：缩写、定义与正文链接。
 - [参考项目设计对照](REFERENCE_DESIGN.md)：本次如何借鉴机器学习指南。
+
+## 🌐 启动学习网站
+
+安装 Node.js 24+，在仓库根目录执行：
+
+```bash
+npm ci
+npm run dev
+```
+
+打开 [本机学习网站](http://127.0.0.1:5173)。40 篇课程和70套练习直接由现有 Markdown 生成，选择题支持核对，开放题提供学习笔记和自评要点；进度只保存在当前浏览器。
+
+运行 `npm run build` 生成 `dist/`，可交给静态 HTTP 服务托管；hash 路由支持子目录。生产预览、内容更新和测试方式见[网站运行说明](website/README.md)。
 
 ## 🗺️ 知识地图
 
@@ -170,6 +184,17 @@ python3 examples/agent_policy.py
 
 检查覆盖内部路径与锚点、教学模块、题目和解析的配对与编号、各章题量。CI 使用同一组命令；外部参考的可访问性与技术准确性需单独复核，结构检查不能替代内容评审。
 
+网站修改另需运行：
+
+```bash
+npm test
+npm run format:check
+npm run build
+npm run test:e2e
+```
+
+首次浏览器测试可用 `npx playwright install chromium` 安装 Chromium；macOS 下也支持使用现有 Google Chrome。测试包含桌面、390px 手机、子目录托管、安全渲染和学习记录恢复。
+
 ## 🤝 贡献指南
 
 欢迎贡献！请阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 了解如何参与本项目。
@@ -186,12 +211,12 @@ python3 examples/agent_policy.py
 ## 📄 许可证
 
 - 文档内容：[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-- 代码示例：[MIT License](LICENSE)
+- 代码示例与前端代码：[MIT License](LICENSE)
 
 > ⚠️ **免责声明**：本项目所有内容仅用于**教育学习与合法防御**目的。请勿将书中技术用于任何未经授权的攻击行为，否则后果自负。
 
 ---
 
-**最后更新**：2026年10月4日 ｜ **维护者**：网络安全防御技术百科全书项目组
+**最后更新**：2026年10月15日 ｜ **维护者**：网络安全防御技术百科全书项目组
 
 📔 查看[开发日志](DEVELOPMENT_LOG.md)了解项目演进历史与最新进展。

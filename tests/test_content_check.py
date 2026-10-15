@@ -130,6 +130,21 @@ class ContentCheckTests(unittest.TestCase):
         self.assertTrue(any("配套小测" in e["message"] for e in errors))
         self.assertTrue(any("本章缺少试卷" in e["message"] for e in errors))
 
+    def test_generated_site_and_browser_outputs_are_not_counted_as_source(self):
+        self.write("README.md", "# Source\n")
+        self.write("website/public/content/docs/02-cryptography/copy.md", "[broken](missing.md)\n")
+        self.write("dist/exams/02-cryptography/copied-题目.md", "### 1. Copied\n")
+        self.write("website/src/generated/copy.md", "[broken](missing.md)\n")
+        self.write("test-results/error-context.md", "[broken](missing.md)\n")
+        self.write("playwright-report/notes.md", "[broken](missing.md)\n")
+        result = self.check(0)
+        self.assertEqual(result["markdown_files"], 1)
+        self.assertEqual(result["exam_sets"], 0)
+
+    def test_website_authored_documentation_still_has_its_links_checked(self):
+        self.write("website/README.md", "# Website\n[broken](missing.md)\n")
+        self.assertTrue(any(e["path"] == "website/README.md" for e in self.check(1)["errors"]))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -177,10 +177,12 @@
 
 ### 3. 本地测试
 ```bash
-cd Network-security-defense-tech-encyclopaedia
+cd Network-security-defensetech-encyclopedia
 python3 -m unittest discover -s tests -v
 python3 scripts/check_content.py
 ```
+
+若修改网站，在根目录安装 Node.js 24+ 并执行 `npm ci`、`npm test`、`npm run format:check`、`npm run build` 和 `npm run test:e2e`。浏览器准备、生产预览及子目录验收见[网站运行说明](website/README.md)。教材与题库仍维护 `docs/`、`exams/` 的原 Markdown；不要手改或提交 `website/public/content/`、`website/src/generated/`、`dist/` 和测试报告。
 
 ### 4. 提交PR
 - PR 标题格式：`feat: 新增[文章标题]文章`
@@ -251,4 +253,4 @@ python3 scripts/check_content.py
 
 ---
 
-*最后更新：2026年10月4日*
+*最后更新：2026年10月15日*

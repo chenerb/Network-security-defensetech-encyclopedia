@@ -3,3 +3,9 @@ __pycache__/
 .DS_Store
 .superpowers/
 .obsidian/
+node_modules/
+dist/
+website/src/generated/
+website/public/content/
+test-results/
+playwright-report/

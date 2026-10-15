@@ -29,3 +29,23 @@ jobs:
           python examples/integrity_hmac.py
           python examples/parameterized_query.py
           python examples/agent_policy.py
+
+  website:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Check source formatting
+        run: npm run format:check
+      - name: Test content parsing, routes, search and learning progress
+        run: npm test
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+      - name: Build and verify learning journeys
+        run: npm run test:e2e
