@@ -102,6 +102,34 @@ test('手机目录选中标题后收起并将焦点交给正文，包括重复�
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
+test('无滚动位移时重复回到开篇仍高亮首个目录项且不新增历史', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1800 });
+  await openFixture(page, '# 阅读交互夹具\n\n## 身份与 `权限`\n\n简短说明。');
+  const first = page
+    .locator('.reader-toc')
+    .getByRole('navigation', { name: '本节目录' })
+    .getByRole('link', { name: '身份与 权限', exact: true });
+  await expect(first).toHaveAttribute('aria-current', 'location');
+  // The entire short page fits, so scroll events cannot repair an incorrect clicked-heading state.
+  expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(
+    true,
+  );
+  const top = page.getByRole('link', { name: '回到开篇', exact: true });
+  await top.click();
+  await expect(page.getByRole('article').getByRole('heading', { level: 1 })).toBeFocused();
+  const before = await page.evaluate(() => ({
+    url: location.href,
+    history: history.length,
+    scrollY,
+  }));
+  await top.click();
+  await expect(page.getByRole('article').getByRole('heading', { level: 1 })).toBeFocused();
+  await expect(first).toHaveAttribute('aria-current', 'location');
+  expect(
+    await page.evaluate(() => ({ url: location.href, history: history.length, scrollY })),
+  ).toEqual(before);
+});
+
 test('连续后退到无锚点正文时恢复阅读器焦点并保留浏览器滚动位置', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openFixture(page);

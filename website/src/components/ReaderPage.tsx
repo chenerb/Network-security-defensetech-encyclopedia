@@ -184,7 +184,7 @@ export function ReaderPage({
       if (element && reader.current?.querySelector('article')?.contains(element)) {
         element.scrollIntoView({ block: 'start' });
         element.focus({ preventScroll: true });
-        setActiveHeading(id);
+        setActiveHeading(contents.find((heading) => heading.id === id)?.id ?? contents[0]?.id);
       }
     });
   }
