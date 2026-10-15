@@ -34,6 +34,8 @@
 
 ## 🌐 启动学习网站
 
+在线访问：[网络安全防御技术学习指南](https://network-defense-learning-guide.cocoa-tang-7127.chatgpt.site)。电脑和手机均可通过浏览器打开，无须运行本地服务；学习记录保存在各自浏览器，不会跨设备同步。
+
 安装 Node.js 24+，在仓库根目录执行：
 
 ```bash

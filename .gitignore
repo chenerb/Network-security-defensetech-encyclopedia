@@ -9,3 +9,4 @@ website/src/generated/
 website/public/content/
 test-results/
 playwright-report/
+.sites/
