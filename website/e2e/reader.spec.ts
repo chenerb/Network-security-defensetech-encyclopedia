@@ -62,6 +62,7 @@ test('选择和开放笔记可刷新恢复，解析按题展开，重做保留�
     .check();
   await page.getByRole('button', { name: '核对答案', exact: true }).click();
   await expect(page.getByRole('status', { name: '客观题成绩' })).toContainText('8 / 48 分');
+  page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: '清空作答和笔记', exact: true }).click();
   await page.reload();
   await expect(page.getByRole('textbox', { name: '第 9 题学习笔记', exact: true })).toHaveValue('');

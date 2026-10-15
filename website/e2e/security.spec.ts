@@ -170,6 +170,11 @@ test('unwritable storage still allows reading and interactive progress with an e
     main.getByRole('heading', { level: 1, name: lessonTitle, exact: true }),
   ).toBeVisible();
   await main.getByRole('button', { name: '标记为已学', exact: true }).click();
+  await main.getByRole('button', { name: '加入收藏', exact: true }).click();
+  await expect(main.getByRole('button', { name: '已收藏', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
   await expect(main.getByRole('button', { name: '已学完', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',

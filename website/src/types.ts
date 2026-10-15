@@ -79,6 +79,7 @@ export interface ExamAttempt {
   submitted: boolean;
   updatedAt: string;
 }
+export type ExamAttemptUpdate = (current: ExamAttempt | undefined) => ExamAttempt;
 export interface LearningProgress {
   version: 1;
   completed: string[];

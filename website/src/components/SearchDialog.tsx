@@ -1,13 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { loadSearchIndex } from '../lib/data';
 import { routeForPath } from '../lib/paths';
 import { searchDocuments } from '../lib/search';
 import type { DocumentKind, SearchEntry } from '../types';
 import { Icon } from './Icon';
+import './search-interactions.css';
 
 export function SearchDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const input = useRef<HTMLInputElement>(null);
+  const resultLinks = useRef<(HTMLAnchorElement | null)[]>([]);
+  const composing = useRef(false);
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState<DocumentKind | undefined>();
   const [entries, setEntries] = useState<SearchEntry[] | null>(null);
@@ -17,7 +20,10 @@ export function SearchDialog({ open, onClose }: { open: boolean; onClose: () => 
     if (open) {
       dialog.current?.showModal();
       input.current?.focus();
-    } else dialog.current?.close();
+    } else {
+      composing.current = false;
+      dialog.current?.close();
+    }
   }, [open]);
   useEffect(() => {
     if (!open || entries) return;
@@ -34,6 +40,13 @@ export function SearchDialog({ open, onClose }: { open: boolean; onClose: () => 
     () => searchDocuments(query, entries || [], kind),
     [query, entries, kind],
   );
+  const isComposing = (event: KeyboardEvent<HTMLElement>) =>
+    composing.current || event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229;
+  const focusResult = (index: number) => {
+    const link = resultLinks.current[index];
+    link?.focus({ preventScroll: true });
+    link?.scrollIntoView({ block: 'nearest' });
+  };
   return (
     <dialog
       className="search-dialog"
@@ -42,7 +55,7 @@ export function SearchDialog({ open, onClose }: { open: boolean; onClose: () => 
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
           event.preventDefault();
-          onClose();
+          if (!isComposing(event)) onClose();
         }
       }}
       onClose={(event) => {
@@ -67,14 +80,40 @@ export function SearchDialog({ open, onClose }: { open: boolean; onClose: () => 
             placeholder="试试：零信任、nonce、提示注入…"
             value={query}
             aria-label="搜索课程与练习"
+            aria-describedby="search-keyboard-hint"
             onChange={(event) => setQuery(event.target.value)}
+            onCompositionStart={() => {
+              composing.current = true;
+            }}
+            onCompositionEnd={() => {
+              composing.current = false;
+            }}
             onKeyDown={(event) => {
+              if (isComposing(event)) return;
+              if (results.length && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
+                event.preventDefault();
+                focusResult(event.key === 'ArrowDown' ? 0 : results.length - 1);
+              }
               if (event.key === 'Enter' && results[0]) {
+                event.preventDefault();
                 window.location.hash = routeForPath(results[0].entry.path);
                 onClose();
               }
             }}
           />
+          {query && (
+            <button
+              className="search-clear"
+              type="button"
+              aria-label="清空搜索"
+              onClick={() => {
+                setQuery('');
+                input.current?.focus();
+              }}
+            >
+              <Icon name="close" size={17} />
+            </button>
+          )}
         </div>
         <div className="search-filters" role="group" aria-label="搜索类型">
           {[
@@ -121,12 +160,29 @@ export function SearchDialog({ open, onClose }: { open: boolean; onClose: () => 
                 找到 {results.length}
                 {results.length === 40 ? '+' : ''} 条相关内容
               </p>
-              {results.map((result) => (
+              {results.map((result, index) => (
                 <a
                   className="search-result"
                   key={result.entry.path}
+                  ref={(link) => {
+                    resultLinks.current[index] = link;
+                  }}
                   href={routeForPath(result.entry.path)}
                   onClick={onClose}
+                  onKeyDown={(event) => {
+                    if (isComposing(event)) return;
+                    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                      event.preventDefault();
+                      if (event.key === 'ArrowUp' && index === 0) input.current?.focus();
+                      else
+                        focusResult(
+                          Math.min(
+                            results.length - 1,
+                            index + (event.key === 'ArrowDown' ? 1 : -1),
+                          ),
+                        );
+                    }
+                  }}
                 >
                   <span className="search-result-kind">
                     {
@@ -144,7 +200,7 @@ export function SearchDialog({ open, onClose }: { open: boolean; onClose: () => 
           )}
         </div>
         <footer>
-          <span>↵ 打开首项</span>
+          <span id="search-keyboard-hint">↑↓ 选择结果 · Enter 打开</span>
           <span>Esc 关闭</span>
         </footer>
       </div>

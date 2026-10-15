@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
-import type { DocumentEntry, ExamAttempt, ExamPaper, LearningProgress } from '../types';
+import { useEffect, useRef, useState } from 'react';
+import type { MouseEvent } from 'react';
+import type { DocumentEntry, ExamAttemptUpdate, ExamPaper, LearningProgress } from '../types';
 import { catalog, getExam, getLesson, loadMarkdown, loadPaper } from '../lib/data';
-import { routeForPath } from '../lib/paths';
+import { parseRoute, routeForPath } from '../lib/paths';
 import type { MarkdownHeading } from '../lib/markdown';
 import { Markdown } from './Markdown';
 import { ExamView } from './ExamView';
 import './reader.css';
+import './reading-interactions.css';
 
 export interface ReaderPageProps {
   document: DocumentEntry;
@@ -13,7 +15,7 @@ export interface ReaderPageProps {
   section?: string;
   onToggleComplete: (lessonId: string) => void;
   onToggleBookmark: (path: string) => void;
-  onAttemptChange: (examId: string, attempt: ExamAttempt) => void;
+  onAttemptChange: (examId: string, updateAttempt: ExamAttemptUpdate) => void;
 }
 
 type Loaded =
@@ -39,6 +41,9 @@ export function ReaderPage({
   const [loaded, setLoaded] = useState<Loaded>({ path: entry.path, status: 'loading' });
   const [retry, setRetry] = useState(0);
   const [headings, setHeadings] = useState<MarkdownHeading[]>([]);
+  const [activeHeading, setActiveHeading] = useState<string>();
+  const reader = useRef<HTMLElement>(null);
+  const jumpFrame = useRef<number | undefined>(undefined);
   const lesson = entry.lessonId ? getLesson(entry.lessonId) : undefined;
   const chapter = catalog.chapters.find((ch) => ch.id === entry.chapterId);
   const bookmarked = progress.bookmarks.includes(entry.path);
@@ -61,6 +66,7 @@ export function ReaderPage({
     let active = true;
     setLoaded({ path: entry.path, status: 'loading' });
     setHeadings([]);
+    setActiveHeading(undefined);
     const request =
       (entry.kind === 'question' || entry.kind === 'answer') && entry.examId
         ? loadPaper(entry.examId, controller.signal).then((paper) => ({
@@ -87,25 +93,102 @@ export function ReaderPage({
   }, [entry.path, entry.kind, entry.examId, retry]);
 
   useEffect(() => {
-    if (
-      !section ||
-      loaded.path !== entry.path ||
-      (loaded.status !== 'markdown' && loaded.status !== 'paper')
-    )
-      return;
-    const frame = window.requestAnimationFrame(() => {
-      const element = globalThis.document.getElementById(section);
-      if (element && globalThis.document.querySelector('.reader-page')?.contains(element)) {
-        element.scrollIntoView({ block: 'start' });
-        element.focus({ preventScroll: true });
+    if (loaded.path !== entry.path || loaded.status !== 'markdown' || headings.length === 0) return;
+    const article = reader.current?.querySelector('article');
+    if (!article) return;
+    const sections = headings.filter((heading) => heading.level > 1);
+    const candidates = sections.length > 0 ? sections : headings;
+    const elements = candidates
+      .map((heading) => globalThis.document.getElementById(heading.id))
+      .filter((element): element is HTMLElement => Boolean(element && article.contains(element)));
+    let frame: number | undefined;
+    const update = () => {
+      frame = undefined;
+      let current = elements[0];
+      for (const element of elements) {
+        const inset = Number.parseFloat(window.getComputedStyle(element).scrollMarginTop) || 0;
+        if (element.getBoundingClientRect().top > inset + 16) break;
+        current = element;
       }
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [section, entry.path, loaded]);
+      setActiveHeading(current?.id);
+    };
+    const schedule = () => {
+      if (frame === undefined) frame = window.requestAnimationFrame(update);
+    };
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    const resize = new ResizeObserver(schedule);
+    resize.observe(article);
+    schedule();
+    return () => {
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      resize.disconnect();
+      if (frame !== undefined) window.cancelAnimationFrame(frame);
+    };
+  }, [entry.path, loaded, headings]);
+
+  useEffect(() => {
+    if (loaded.path !== entry.path || (loaded.status !== 'markdown' && loaded.status !== 'paper'))
+      return;
+    const cancelJump = () => {
+      if (jumpFrame.current !== undefined) window.cancelAnimationFrame(jumpFrame.current);
+      jumpFrame.current = undefined;
+    };
+    const position = (id: string) => {
+      cancelJump();
+      jumpFrame.current = window.requestAnimationFrame(() => {
+        jumpFrame.current = undefined;
+        const element = globalThis.document.getElementById(id);
+        if (element && reader.current?.contains(element)) {
+          element.scrollIntoView({ block: 'start' });
+          element.focus({ preventScroll: true });
+        }
+      });
+    };
+    const followHash = () => {
+      cancelJump();
+      const route = parseRoute(window.location.hash);
+      if (route.view === 'document' && route.path === entry.path) {
+        if (route.section) position(route.section);
+        else reader.current?.focus({ preventScroll: true });
+      }
+    };
+    // Keep this listener mounted across same-document section changes; App may render during dispatch.
+    // Rapid back/forward may return to the same section prop before React renders the interim route.
+    window.addEventListener('hashchange', followHash);
+    if (section) position(section);
+    return () => {
+      cancelJump();
+      window.removeEventListener('hashchange', followHash);
+    };
+  }, [entry.path, loaded]);
 
   const ready = loaded.path === entry.path;
   const toc = headings.filter((heading) => heading.level > 1);
   const contents = toc.length > 0 ? toc : headings;
+
+  function jumpToHeading(event: MouseEvent<HTMLAnchorElement>, id: string) {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+      return;
+    event.preventDefault();
+    const disclosure = event.currentTarget.closest('details');
+    if (disclosure) disclosure.open = false;
+    const hash = routeForPath(entry.path, id);
+    if (window.location.hash !== hash) window.location.hash = hash;
+    if (jumpFrame.current !== undefined) window.cancelAnimationFrame(jumpFrame.current);
+    // A repeated hash does not emit hashchange. Always position after the mobile TOC closes.
+    jumpFrame.current = window.requestAnimationFrame(() => {
+      jumpFrame.current = undefined;
+      const element = globalThis.document.getElementById(id);
+      if (element && reader.current?.querySelector('article')?.contains(element)) {
+        element.scrollIntoView({ block: 'start' });
+        element.focus({ preventScroll: true });
+        setActiveHeading(id);
+      }
+    });
+  }
+
   const tocLinks = (
     <nav aria-label="本节目录">
       <ol>
@@ -113,7 +196,8 @@ export function ReaderPage({
           <li key={heading.id} className={heading.level > 2 ? 'toc-nested' : ''}>
             <a
               href={routeForPath(entry.path, heading.id)}
-              aria-current={section === heading.id ? 'location' : undefined}
+              aria-current={activeHeading === heading.id ? 'location' : undefined}
+              onClick={(event) => jumpToHeading(event, heading.id)}
             >
               {heading.text}
             </a>
@@ -124,7 +208,7 @@ export function ReaderPage({
   );
 
   return (
-    <section className="reader-page" aria-label={entry.title}>
+    <section ref={reader} className="reader-page" aria-label={entry.title} tabIndex={-1}>
       <header className="reader-toolbar">
         <div className="reader-location">
           <a href="#/catalog">课程目录</a>
@@ -189,6 +273,26 @@ export function ReaderPage({
             <article className="reader-article" aria-label={entry.title}>
               <Markdown source={loaded.source} sourcePath={entry.path} onHeadings={setHeadings} />
             </article>
+            {entry.kind === 'lesson' && lesson && (
+              <section className="reader-finish" aria-label="本节学习状态">
+                <div>
+                  <h2>{completed ? '本节已学完' : '读到这里，记录这一步'}</h2>
+                  <p>
+                    {completed
+                      ? '可以继续下一节，也可以回到练习检查理解。'
+                      : '完成标记可随时撤销，方便下次继续学习。'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className={`reader-complete-button${completed ? ' is-complete' : ''}`}
+                  aria-pressed={completed}
+                  onClick={() => onToggleComplete(lesson.id)}
+                >
+                  {completed ? '取消已学' : '完成本节'}
+                </button>
+              </section>
+            )}
             {related.length > 0 && (
               <section className="reader-practice" aria-labelledby="paired-practice-title">
                 <div className="reader-section-title">
@@ -239,7 +343,7 @@ export function ReaderPage({
             paper={loaded.paper}
             attempt={progress.attempts[loaded.paper.id]}
             showAnswers={entry.kind === 'answer'}
-            onAttemptChange={(attempt) => onAttemptChange(loaded.paper.id, attempt)}
+            onAttemptChange={(updateAttempt) => onAttemptChange(loaded.paper.id, updateAttempt)}
           />
         )}
       </div>
@@ -249,7 +353,11 @@ export function ReaderPage({
           <div className="reader-toc-inner">
             <p>本节目录</p>
             {tocLinks}
-            <a className="reader-top-link" href={routeForPath(entry.path, headings[0]?.id)}>
+            <a
+              className="reader-top-link"
+              href={routeForPath(entry.path, headings[0]?.id)}
+              onClick={(event) => headings[0] && jumpToHeading(event, headings[0].id)}
+            >
               回到开篇
             </a>
           </div>

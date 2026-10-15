@@ -2,7 +2,8 @@ import { Component, useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { catalog, getDocument, getLesson } from './lib/data';
 import { parseRoute, routeForPath } from './lib/paths';
-import { emptyProgress, readProgress, writeProgress } from './lib/progress';
+import { emptyProgress, PROGRESS_KEY, readProgress, writeProgress } from './lib/progress';
+import './components/shell-interactions.css';
 import type { LearningProgress } from './types';
 import { ReaderPage } from './components/ReaderPage';
 import { Icon } from './components/Icon';
@@ -30,6 +31,26 @@ const validContent = {
 const toggle = (list: string[], value: string) =>
   list.includes(value) ? list.filter((x) => x !== value) : [...list, value];
 
+function readProgressSnapshot() {
+  const target = storage();
+  let fingerprint: string | null | undefined;
+  // Capture the exact validated read, including a missing key; storage events may still be queued.
+  const result = readProgress(
+    target && {
+      getItem(key) {
+        const source = target.getItem(key);
+        fingerprint = source;
+        return source;
+      },
+      setItem: (key, value) => target.setItem(key, value),
+    },
+    validContent,
+  );
+  return { ...result, fingerprint };
+}
+
+const conflictWarning = '其他标签页更新了学习记录，本页仍有未保存内容。请导出备份后刷新。';
+
 class PageBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() {
@@ -53,10 +74,13 @@ class PageBoundary extends Component<{ children: ReactNode }, { failed: boolean 
 
 export default function App() {
   const [route, setRoute] = useState(() => parseRoute(window.location.hash));
-  const [initial] = useState(() => readProgress(storage(), validContent));
+  const [initial] = useState(readProgressSnapshot);
   const [progress, setProgress] = useState(initial.progress);
   const progressRef = useRef(progress);
   const mayPersist = useRef(!initial.warning);
+  const unsavedProgress = useRef(false);
+  const unsavedBaseline = useRef<string | null | undefined>(undefined);
+  const externalConflict = useRef(false);
   const [storageWarning, setStorageWarning] = useState(initial.warning);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -66,17 +90,58 @@ export default function App() {
   const entry = currentPath ? getDocument(currentPath) : undefined;
   const updateProgress = useCallback(
     (updater: (old: LearningProgress) => LearningProgress, userAction = true) => {
-      const next = updater(progressRef.current);
+      const latest = readProgressSnapshot();
+      if (
+        unsavedProgress.current &&
+        latest.fingerprint !== undefined &&
+        latest.fingerprint !== unsavedBaseline.current
+      ) {
+        externalConflict.current = true;
+        mayPersist.current = false;
+        setStorageWarning(conflictWarning);
+      }
+      const next = updater(
+        latest.warning || unsavedProgress.current ? progressRef.current : latest.progress,
+      );
       progressRef.current = next;
       setProgress(next);
-      if (userAction) mayPersist.current = true;
-      if (mayPersist.current)
-        setStorageWarning(
-          writeProgress(storage(), next) ? null : '当前浏览器无法保存进度，本次学习仍可继续。',
-        );
+      if (latest.warning && !userAction) mayPersist.current = false;
+      if (userAction) mayPersist.current = !externalConflict.current;
+      if (mayPersist.current) {
+        const saved = writeProgress(storage(), next);
+        if (!saved && !unsavedProgress.current) unsavedBaseline.current = latest.fingerprint;
+        if (saved) unsavedBaseline.current = undefined;
+        unsavedProgress.current = !saved;
+        setStorageWarning(saved ? null : '当前浏览器无法保存进度，本次学习仍可继续。');
+      }
     },
     [],
   );
+
+  useEffect(() => {
+    const sync = (event: StorageEvent) => {
+      if ((event.key !== PROGRESS_KEY && event.key !== null) || event.storageArea !== storage())
+        return;
+      const latest = readProgress(storage(), validContent);
+      if (latest.warning) {
+        mayPersist.current = false;
+        setStorageWarning('其他标签页的学习记录暂时无法读取，当前内容已保留。请先备份原记录。');
+        return;
+      }
+      if (unsavedProgress.current) {
+        externalConflict.current = true;
+        mayPersist.current = false;
+        setStorageWarning(conflictWarning);
+        return;
+      }
+      progressRef.current = latest.progress;
+      setProgress(latest.progress);
+      mayPersist.current = true;
+      setStorageWarning(null);
+    };
+    window.addEventListener('storage', sync);
+    return () => window.removeEventListener('storage', sync);
+  }, []);
 
   useEffect(() => {
     const change = () => {
@@ -86,6 +151,7 @@ export default function App() {
     const shortcut = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
+        setMobileOpen(false);
         setSearchOpen((value) => !value);
       }
     };
@@ -138,6 +204,18 @@ export default function App() {
           <Icon name="close" />
         </button>
       </div>
+      <nav className="sidebar-quick-navigation" aria-label="移动端主导航">
+        {[
+          ['#/', '学习地图', 'home'],
+          ['#/catalog', '课程目录', 'catalog'],
+          ['#/exams', '练习中心', 'exams'],
+          ['#/progress', '我的学习', 'progress'],
+        ].map(([href, label, view]) => (
+          <a key={view} href={href} aria-current={route.view === view ? 'page' : undefined}>
+            {label}
+          </a>
+        ))}
+      </nav>
       <nav className="chapter-navigation" aria-label="课程目录">
         {catalog.chapters.map((chapter, index) => (
           <details
@@ -252,11 +330,12 @@ export default function App() {
           <button className="search-trigger" aria-label="搜索" onClick={() => setSearchOpen(true)}>
             <Icon name="search" size={17} />
             <span>搜索知识点、课程…</span>
-            <kbd>⌘ K</kbd>
+            <kbd>{/Mac|iPhone|iPad|iPod/.test(navigator.platform) ? '⌘ K' : 'Ctrl K'}</kbd>
           </button>
           <a
             className="my-learning"
             href="#/progress"
+            aria-label="我的学习"
             aria-current={route.view === 'progress' ? 'page' : undefined}
           >
             <Icon name="activity" size={18} />
@@ -302,8 +381,12 @@ export default function App() {
               onReset={() => {
                 if (
                   window.confirm('清除当前浏览器中的完成标记、收藏和全部作答记录？此操作不能撤回。')
-                )
+                ) {
+                  externalConflict.current = false;
+                  unsavedProgress.current = false;
+                  unsavedBaseline.current = undefined;
                   updateProgress(() => emptyProgress());
+                }
               }}
             />
           )}
@@ -319,8 +402,11 @@ export default function App() {
               onToggleBookmark={(path) =>
                 updateProgress((old) => ({ ...old, bookmarks: toggle(old.bookmarks, path) }))
               }
-              onAttemptChange={(id, attempt) =>
-                updateProgress((old) => ({ ...old, attempts: { ...old.attempts, [id]: attempt } }))
+              onAttemptChange={(id, updateAttempt) =>
+                updateProgress((old) => ({
+                  ...old,
+                  attempts: { ...old.attempts, [id]: updateAttempt(old.attempts[id]) },
+                }))
               }
             />
           )}

@@ -1,0 +1,156 @@
+.exam-view .exam-progress-panel {
+  margin-top: 24px;
+  padding: 18px 19px 13px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f7f9fc;
+}
+.exam-view .exam-progress-counts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 18px 26px;
+}
+.exam-view .exam-progress-counts p {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.exam-view .exam-progress-counts strong {
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 650;
+}
+.exam-view .exam-progress-counts p > span {
+  margin-left: auto;
+  font-size: 11px;
+}
+.exam-view .exam-progress-counts progress {
+  display: block;
+  width: 100%;
+  height: 5px;
+  border: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--line);
+  accent-color: var(--blue);
+}
+.exam-view .exam-progress-counts progress::-webkit-progress-bar {
+  background: var(--line);
+}
+.exam-view .exam-progress-counts progress::-webkit-progress-value {
+  background: var(--blue);
+  border-radius: 3px;
+}
+.exam-view .exam-progress-counts progress::-moz-progress-bar {
+  background: var(--blue);
+  border-radius: 3px;
+}
+.exam-view .exam-progress-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 5px 16px;
+  padding-top: 9px;
+}
+.exam-view .exam-progress-actions p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.8;
+}
+.exam-view .exam-progress-actions button {
+  min-height: 36px;
+  font-size: 12px;
+}
+.exam-view .exam-jump {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(66px, 1fr));
+  gap: 8px;
+}
+.exam-view .exam-jump a {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  min-height: 56px;
+  padding: 7px 5px;
+  text-align: center;
+  background: #fff;
+}
+.exam-view .exam-jump a > span {
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.3;
+}
+.exam-view .exam-jump a > small {
+  font-size: 10px;
+  line-height: 1.4;
+}
+.exam-view .exam-jump a[data-state='answered'],
+.exam-view .exam-jump a[data-state='noted'] {
+  color: var(--blue);
+  background: #f0f5ff;
+  border-color: #bacbe9;
+}
+.exam-view .exam-jump a[data-state='correct'] {
+  color: var(--teal);
+  background: #edf6f2;
+  border-color: #bad5cb;
+}
+.exam-view .exam-jump a[data-state='review'] {
+  color: #88602a;
+  background: #fff8eb;
+  border-color: #e2caa2;
+}
+.exam-view .exam-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+.exam-view .exam-review-actions button {
+  min-height: 40px;
+  padding: 9px 12px;
+  background: #fff;
+  border: 1px solid #c8d6ec;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.exam-view .exam-score {
+  scroll-margin-top: 100px;
+}
+.exam-view .exam-score:focus-visible,
+.exam-view .exam-question:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 5px;
+}
+@media (max-width: 540px) {
+  .exam-view .exam-progress-panel {
+    padding: 15px 14px 10px;
+  }
+  .exam-view .exam-progress-counts {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .exam-view .exam-jump {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .exam-view .exam-jump a {
+    min-width: 0;
+    min-height: 55px;
+  }
+  .exam-view .exam-review-actions {
+    width: 100%;
+  }
+  .exam-view .exam-review-actions button {
+    flex: 1 1 170px;
+    text-align: center;
+  }
+}
