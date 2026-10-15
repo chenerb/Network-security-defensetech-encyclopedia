@@ -100,7 +100,7 @@ def check_repository(root):
             line = source.count("\n", 0, offset) + 1
             raw = raw.strip()
             target = (raw[1:raw.index(">")] if raw.startswith("<") and ">" in raw
-                      else re.split(r'\s+[\"\']', raw, 1)[0])
+                      else re.split(r'\s+[\"\']', raw, maxsplit=1)[0])
             if target.startswith("missing-reference:"):
                 report(path, line, "链接引用未定义：" + target.split(":", 1)[1])
                 continue

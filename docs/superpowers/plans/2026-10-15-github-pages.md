@@ -24,5 +24,13 @@
 - [x] Restrict the previous Sites audience to the owner and enable GitHub Pages Actions hosting.
 - [x] Add `.github/workflows/pages.yml`; replace Sites documentation and remove its manifest.
 - [x] Run the production build, content checker, 26 unit tests and existing browser subpath test.
-- [ ] Commit and push the change; fast-forward `main` without overwriting remote history.
-- [ ] Confirm the Pages Actions deployment, verify the public repository URL, and open it for the user.
+- [x] Commit and push the change; fast-forward `main` without overwriting remote history.
+- [x] Confirm the Pages Actions deployment, verify the public repository URL, and open it for the user.
+
+## Verification
+
+First Pages deployment: [successful run](https://github.com/chenerb/Network-security-defensetech-encyclopedia/actions/runs/38665696276), source commit `f071060`.
+
+Anonymous HTTP returned 200. The existing browser subpath test passed against the live GitHub Pages URL, covering course and exam loading, direct entry, refresh, and resource request prefixes.
+
+The pre-existing Python 3.13 CI failure was traced to a positional `re.split` maxsplit argument; use `maxsplit=1` and retain the existing strict stderr assertions.
